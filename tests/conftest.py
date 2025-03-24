@@ -1,16 +1,26 @@
 
 import pytest
-from test_helper import TestHelper
+import requests
+
+from api_client import APIClient
+from data.constants import DELETE_COURIER_URL
+from data.error_messages import DeleteCourier
+from test_helper import DataGenerator
 
 
 # метод регистрации нового курьера возвращает список из логина и пароля
 # если регистрация не удалась, возвращает пустой список
 @pytest.fixture(scope="function")
 def register_new_courier_and_return_login_password():
-    # собираем тело запроса
-    payload = TestHelper().generate_courier_data()
-    # отправляем запрос на регистрацию курьера и сохраняем ответ в переменную response
-    response = TestHelper.register(payload)
-    # если регистрация прошла успешно (код ответа 201), добавляем в список логин и пароль курьера
-    if response.status_code == 201:
-        return payload
+    payload = DataGenerator.generate_courier_data()
+    response = APIClient.register(payload)
+
+    assert response.status_code == 201, "Не удалось зарегистрировать курьера"
+
+    yield payload
+
+    # удаляем курьера
+    courier_id = APIClient.get_courier_id(payload)
+    response = requests.delete(DELETE_COURIER_URL.format(courier_id=courier_id))
+    assert response.status_code == DeleteCourier.OK.value["status"]
+    assert response.text == DeleteCourier.OK.value["message"]

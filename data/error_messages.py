@@ -16,3 +16,9 @@ class CourierLogInMessages(Enum):
 class Order(Enum):
     CREATE_ORDER = {"message": '{"trace":{}}', "status": 201}
     GET_ORDERS = {"status": 200}
+
+
+class DeleteCourier(Enum):
+    OK = {"message": '{"ok":true}', "status": 200}
+    BAD_REQUEST = {"message":  "Недостаточно данных для удаления курьера", "status": 400}
+
